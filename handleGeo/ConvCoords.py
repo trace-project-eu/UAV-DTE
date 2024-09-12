@@ -15,7 +15,7 @@ class ConvCoords:
         self.obstacles_wgs84 = geo_obstacles
         self.obstacles_ned = [[] for _ in range(len(self.geo_obstacles))]
         self.reference = WGS84_class(math.radians(init_pos[0]),
-                                    math.radians(init_pos[1]), 0)
+                                    math.radians(init_pos[1]), math.radians(init_pos[2]))
 
     def conv_wgs84_to_ned(self, geo_coords):
         """Convert geographic coordinates from WGS84 to NED."""
@@ -32,7 +32,7 @@ class ConvCoords:
         """Convert a set of geographic coordinates from WGS84 to NED."""
         cart_coords = np.zeros((len(geo_coords), len(geo_coords[0])))
         for i, coord in enumerate(geo_coords):
-            wgs84 = WGS84_class(math.radians(coord[0]), math.radians(coord[1]), 0)
+            wgs84 = WGS84_class(math.radians(coord[0]), math.radians(coord[1]), math.radians(coord[2]))
             ned = WGS84.displacement(self.reference, wgs84)
 
             cart_coords[i][0] = ned.north

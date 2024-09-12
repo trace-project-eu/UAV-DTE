@@ -14,23 +14,27 @@ def main():
     hSpeed = 5   #m/s
     vSpeed = 7   #m/s
 
-    WGS84path = generateTrajectory(GFZ, initialPosition, destinationPosition, flightAltitude, hSpeed, vSpeed)
+    WGS84path = generateTrajectory(GFZ, initialPosition, destinationPosition, flightAltitude)
 
-    # distance = calculateDistance(WGS84path)
+    distance = calculateDistance(WGS84path)
 
 
-def generateTrajectory(GFZ, initialPosition, destinationPosition, flightAltitude, hSpeed, vSpeed):
+def generateTrajectory(GFZ, initialPosition, destinationPosition, flightAltitude):
+
+    # add altitude to the initial and final positions
+    initialPosition.append(0)
+    destinationPosition.append(0)
 
     # define initialPosition as reference point for the conversions
     convertor = ConvCoords([], [], initialPosition)
 
     # convert initial position and destination to NED
-    nedInitialPosition = convertor.conv_wgs84_to_ned([initialPosition])[0]
-    nedDestinationPosition = convertor.conv_wgs84_to_ned([destinationPosition])[0]
+    nedInitialPosition = convertor.conv_wgs84_to_ned([initialPosition])
+    nedDestinationPosition = convertor.conv_wgs84_to_ned([destinationPosition])
 
     # add intermediate WPs
     # TODO: add intermediate WPs for geo-fenced zones with A*
-    nedPath = np.array([np.append(nedInitialPosition, 0), np.append(nedInitialPosition, flightAltitude), np.append(nedDestinationPosition, flightAltitude), np.append(nedDestinationPosition, 0)])
+    nedPath = np.array([nedInitialPosition[0], np.append(nedInitialPosition[0][0:2],[flightAltitude]), np.append(nedDestinationPosition[0][0:2], [flightAltitude]), nedDestinationPosition[0]])
 
     # convert ned path to WGS84 coordinates
     return convertor.ned_to_wgs84([nedPath.tolist()])
@@ -40,14 +44,14 @@ def generateTrajectory(GFZ, initialPosition, destinationPosition, flightAltitude
 def calculateDistance(WGS84path):
 
     # define initialPosition as reference point for the conversions
-    convertor = ConvCoords([], [], WGS84path[0][0][0:2])
+    convertor = ConvCoords([], [], WGS84path[0][0])
 
     # convert trajectory to NED
     nedPath = convertor.conv_wgs84_to_ned(WGS84path[0])
 
     distance = 0
     for i in range(len(WGS84path[0])-1):
-        distance += WGS84.distance(WGS84path[0][i][0:2], WGS84path[0][i][0:2])
+        distance += WGS84.distance(WGS84path[0][i], WGS84path[0][i])
 
     return distance
 
