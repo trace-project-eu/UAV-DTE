@@ -37,6 +37,7 @@ class ConvCoords:
 
             cart_coords[i][0] = ned.north
             cart_coords[i][1] = ned.east
+            cart_coords[i][2] = geo_coords[i][2]
 
         return cart_coords
 

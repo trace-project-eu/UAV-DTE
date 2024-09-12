@@ -1,3 +1,5 @@
+import math
+
 from handleGeo.ConvCoords import ConvCoords
 from handleGeo.coordinates import WGS84
 import numpy as np
@@ -18,6 +20,7 @@ def main():
 
     distance = calculateDistance(WGS84path)
 
+    time = estimatedTime(WGS84path)
 
 def generateTrajectory(GFZ, initialPosition, destinationPosition, flightAltitude):
 
@@ -51,14 +54,16 @@ def calculateDistance(WGS84path):
 
     distance = 0
     for i in range(len(WGS84path[0])-1):
-        distance += WGS84.distance(WGS84path[0][i], WGS84path[0][i])
+        distance += math.dist(nedPath[i], nedPath[i+1])
 
     return distance
 
 
 
 def estimatedTime(WGS84path):
-    #TODO: calculate time
+
+    distance = calculateDistance(WGS84path)
+
     time = 0
     return time
 
