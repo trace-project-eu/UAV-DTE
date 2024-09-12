@@ -1,0 +1,35 @@
+{
+  "GFZ": [
+    {
+      "lat": 42.22222,
+      "long": 35.55555
+    },
+    {
+      "lat": 42.22222,
+      "long": 35.55555
+    },
+    {
+      "lat": 42.22222,
+      "long": 35.55555
+    },
+    {
+      "lat": 42.22222,
+      "long": 35.55555
+    },
+    {
+      "lat": 42.22222,
+      "long": 35.55555
+    }
+  ],
+  "initialPosition": {
+    "lat": 37.969951,
+    "long": 23.763655
+  },
+  "destinationPosition": {
+    "lat": 42.22222,
+    "long": 35.55555
+  },
+  "flightAltitude": 50,
+  "hSpeed": 5,
+  "vSpeed": 7
+}

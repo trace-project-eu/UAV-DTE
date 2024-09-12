@@ -1,0 +1,12 @@
+Input:
+    Geo-fencing
+    Initial Position
+    Destination Position
+    Flight Altitude
+    Horizontal Speed
+    Vertical Speed
+
+Output:
+    Estimated time
+    Distance
+    Waypoints (in WGS84 coordinates)
