@@ -2,7 +2,6 @@ import math
 from handleGeo.ConvCoords import ConvCoords
 import numpy as np
 
-
 class wdtcUAV:
     def __init__(self, GFZ, initialPosition, destinationPosition, flightAltitude, hSpeed, vSpeed, useCost, visualize):
         self.GFZ = GFZ
@@ -30,10 +29,14 @@ class wdtcUAV:
         nedDestinationPosition = convertor.conv_wgs84_to_ned([self.destinationPosition])
 
         # add intermediate WPs
-        # TODO: add intermediate WPs for geo-fenced zones with A*
-        nedPath = np.array([nedInitialPosition[0], np.append(nedInitialPosition[0][0:2], [self.flightAltitude]),
-                                 np.append(nedDestinationPosition[0][0:2], [self.flightAltitude]),
-                                 nedDestinationPosition[0]])
+        if not self.GFZ:
+            nedPath = np.array([nedInitialPosition[0],
+                                     np.append(nedInitialPosition[0][0:2], [self.flightAltitude]),
+                                     np.append(nedDestinationPosition[0][0:2], [self.flightAltitude]),
+                                     nedDestinationPosition[0]])
+        else:
+            # TODO: add intermediate WPs for geo-fenced zones with A*
+            print("To be implemented soon...")
 
         # convert ned path to WGS84 coordinates
         wgs84path = convertor.ned_to_wgs84([nedPath.tolist()])
@@ -81,13 +84,3 @@ class wdtcUAV:
 
 
         return [wgs84path[0], distance, time, cost]
-
-
-
-
-
-
-
-
-
-
