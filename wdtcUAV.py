@@ -84,33 +84,33 @@ def getWDTC(GFZ, initialPosition, destinationPosition, flightAltitude, hSpeed, v
     return [wgs84path[0], distance, time, cost]
 
 
-def getDistanceMatrix(GFZ, positions, flightAltitude, hSpeed, vSpeedMax, useCost):
-    # Generate distance matrix
+
+def generateMatrices(GFZ, positions, flightAltitude, hSpeed, vSpeedMax, useCost):
+    # Generate matrices
     distanceMatrix = []
-    for i in range(len(positions)):
-        dm = []
-        for j in range(len(positions)):
-            if i == j:
-                dm.append(0)
-            else:
-                values = getWDTC(GFZ, positions[i], positions[j], flightAltitude, hSpeed, vSpeedMax, useCost, False)
-                dm.append(values[1])
-        distanceMatrix.append(dm)
-
-    return distanceMatrix
-
-
-def getTimeMatrix(GFZ, positions, flightAltitude, hSpeed, vSpeedMax, useCost):
-    # Generate time matrix
     timeMatrix = []
     for i in range(len(positions)):
+        dm = []
         tm = []
         for j in range(len(positions)):
             if i == j:
+                dm.append(0)
                 tm.append(0)
             else:
                 values = getWDTC(GFZ, positions[i], positions[j], flightAltitude, hSpeed, vSpeedMax, useCost, False)
-                tm.append(values[1])
+                dm.append(values[1])
+                tm.append(values[2])
+        distanceMatrix.append(dm)
         timeMatrix.append(tm)
 
-    return timeMatrix
+    return [distanceMatrix,timeMatrix]
+
+
+
+def getDistanceMatrix(GFZ, positions, flightAltitude, hSpeed, vSpeedMax, useCost):
+    return generateMatrices(GFZ, positions, flightAltitude, hSpeed, vSpeedMax, useCost)[0]
+
+
+
+def getTimeMatrix(GFZ, positions, flightAltitude, hSpeed, vSpeedMax, useCost):
+    return generateMatrices(GFZ, positions, flightAltitude, hSpeed, vSpeedMax, useCost)[1]
