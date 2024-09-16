@@ -11,6 +11,7 @@ class wdtcUAV:
         self.hSpeed = hSpeed
         self.vSpeed = vSpeed
         self.useCost = useCost
+        self.visualize = visualize
 
     def getValues(self):
 
@@ -36,7 +37,12 @@ class wdtcUAV:
                                      nedDestinationPosition[0]])
         else:
             # TODO: add intermediate WPs for geo-fenced zones with A*
-            print("To be implemented soon...")
+            print("Support of geo-fenced zones to be implemented soon...")
+
+        # visualize path
+        if self.visualize:
+            # TODO: Visualize trajectory
+            print("Trajectory visualization to be implemented soon...")
 
         # convert ned path to WGS84 coordinates
         wgs84path = convertor.ned_to_wgs84([nedPath.tolist()])
@@ -81,6 +87,8 @@ class wdtcUAV:
         cost = time * self.useCost / 60
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 
+        self.initialPosition.pop()
+        self.destinationPosition.pop()
 
 
         return [wgs84path[0], distance, time, cost]
