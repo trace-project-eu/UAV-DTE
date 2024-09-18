@@ -59,6 +59,7 @@ def main():
     time = estimateTime(trajectoryDistance, len(wgs84Path), hSpeed, vSpeed, 2)
     cost = calculateCost(time, useCost)
 
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Example of visualizing a trajectory with the given GFZ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
     visualizeTrajectory(GFZ, np.array(trajectories[1]))
 
 
