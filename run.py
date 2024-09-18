@@ -3,7 +3,6 @@ from scipy.spatial import distance_matrix
 from handleGeo.coordinates.WGS84 import distance
 from wdtcUAV import *
 
-
 def main():
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Input values ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
@@ -12,11 +11,19 @@ def main():
                  [37.9668582, 23.7791731], [37.9684935, 23.777022], [37.9725511,23.7563531], [37.9686551,23.7654603],
                  [37.9684731,23.7763453], [37.9683001,23.7779943]] # [lat, long] in WGS84 coordinate system
     flightAltitude = 50   # m
+    # The user will provide the speed --> corresponding to the horizontal speed for the vehicle,
+    # but we should also know the maximum vertical speed that the UAV is capable of running
     hSpeed = 7   # m/s
-    vSpeed = 5   # m/s
+    vSpeedMax = 5   # m/s
     useCost = 50    # euro/hour
     visualize = False
 
+
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Define hSpeed, vSpeed ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+    if hSpeed > vSpeedMax:
+        vSpeed = vSpeedMax
+    else:
+        vSpeed = hSpeed
 
 
     # ~~~~~~~~~~~~~~ Example of getting Trajectories, Distance, Time and Cost values between two points ~~~~~~~~~~~~~~ #
@@ -51,6 +58,8 @@ def main():
     trajectoryDistance = calculateDistance(trajectories[1])
     time = estimateTime(trajectoryDistance, len(wgs84Path), hSpeed, vSpeed, 2)
     cost = calculateCost(time, useCost)
+
+    visualizeTrajectory(GFZ, np.array(trajectories[1]))
 
 
 if __name__ == "__main__":
