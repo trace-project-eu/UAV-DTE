@@ -7,49 +7,19 @@ from handleGeo.coordinates.WGS84 import distance
 
 def getWDTC(GFZ, initialPosition, destinationPosition, flightAltitude, hSpeed, vSpeed, useCost, visualize):
 
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
-    #                                              Generate Trajectory
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+    # Generate trajectory
     trajectories = generateTrajectory(GFZ, [initialPosition, destinationPosition], flightAltitude, visualize)
     wgs84path = trajectories[0]
     nedPath = trajectories[1]
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 
-
-
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
-    #                                               Calculate Distance
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+    # Calculate distance
     dst = calculateDistance(nedPath)
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 
+    # Estimate time
+    time =  estimateTime(dst, len(wgs84path), hSpeed, vSpeed, 0)
 
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
-    #                                               Estimate Time
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
-    #   a, b are constants used to regulate the balance between   #
-    # horizontal and vertical speeds for the generated trajectory #
-    a = 0.85 # coefficient for horizontal speed
-    b = 0.15 # coefficient for vertical speed
-
-    #  c, d are constants for the sigmoid function, used to  #
-    # calculate a delay for each WP, parametric to the speed #
-    c = 5
-    d = 20
-
-    # calculate estimated time in minutes (linear time + delay per WP - parametric to the UAV's speed)
-    balancedSpeed = a * hSpeed + b * vSpeed
-    delay = c * balancedSpeed / (d + abs(balancedSpeed))
-    time = dst / (60 * balancedSpeed) + delay
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
-
-
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
-    #                                              Calculate Cost
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
-    cost = time * useCost / 60
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
-
+    # Calculate cost
+    cost = calculateCost(time, useCost)
 
     return [wgs84path, dst, time, cost]
 
@@ -102,6 +72,34 @@ def calculateDistance(nedPath):
         distance += math.dist(nedPath[i], nedPath[i + 1])
 
     return distance
+
+
+
+def estimateTime(dst, waypointsNumber, horizontalSpeed, verticalSpeed, delayPerStop):
+    #   a, b are constants used to regulate the balance between   #
+    # horizontal and vertical speeds for the generated trajectory #
+    a = 0.85 # coefficient for horizontal speed
+    b = 0.15 # coefficient for vertical speed
+
+    #  c, d are constants for the sigmoid function, used to  #
+    # calculate a delay for each WP, parametric to the speed #
+    c = 5
+    d = 20
+
+    # calculate estimated time in minutes (linear time + delay per WP - parametric to the UAV's speed)
+    # delay adds a time, parametric to the speed of the UAV for each turn (waypoint)
+    # delayPerStop is an additional time for each landing-delivery position of the UAV
+    balancedSpeed = a * horizontalSpeed + b * verticalSpeed
+    delay = (c * balancedSpeed / (d + abs(balancedSpeed))) * waypointsNumber
+    time = dst / (60 * balancedSpeed) + delay + delayPerStop * (waypointsNumber - 1) / 3
+
+    return time
+
+
+
+def calculateCost(time, useCost):
+    return time * useCost / 60
+
 
 
 

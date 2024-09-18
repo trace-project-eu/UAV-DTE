@@ -13,27 +13,30 @@ def main():
                  [37.9684731,23.7763453], [37.9683001,23.7779943]] # [lat, long] in WGS84 coordinate system
     flightAltitude = 50   # m
     hSpeed = 7   # m/s
-    vSpeedMax = 5   # m/s
+    vSpeed = 5   # m/s
     useCost = 50    # euro/hour
     visualize = False
 
 
 
     # ~~~~~~~~~~~~~~ Example of getting Trajectories, Distance, Time and Cost values between two points ~~~~~~~~~~~~~~ #
+    # distance in meters
+    # time in minutes
+    # cost in euros
     for i in range(len(positions)-1):
-        values = getWDTC(GFZ, positions[0], positions[i+1], flightAltitude, hSpeed, vSpeedMax, useCost, visualize)
+        values = getWDTC(GFZ, positions[0], positions[i+1], flightAltitude, hSpeed, vSpeed, useCost, visualize)
         print(f"\nTrajectory: {values[0]}\n Distance: {values[1]}\n Time: {values[2]}\n Cost: {values[3]}\n")
 
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~ Example of generating distance and time matrices example ~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
     # If you need both
-    matrices = generateMatrices(GFZ, positions, flightAltitude, hSpeed, vSpeedMax, useCost)
+    matrices = generateMatrices(GFZ, positions, flightAltitude, hSpeed, vSpeed, useCost)
     distanceMatrix = matrices[0]
     timeMatrix = matrices[1]
 
     # If you need one of them
-    distanceMatrix = getDistanceMatrix(GFZ, positions, flightAltitude, hSpeed, vSpeedMax, useCost)
-    timeMatrix = getTimeMatrix(GFZ, positions, flightAltitude, hSpeed, vSpeedMax, useCost)
+    distanceMatrix = getDistanceMatrix(GFZ, positions, flightAltitude, hSpeed, vSpeed, useCost)
+    timeMatrix = getTimeMatrix(GFZ, positions, flightAltitude, hSpeed, vSpeed, useCost)
 
     for i in range(len(positions)):
         print(distanceMatrix[i])
@@ -45,9 +48,9 @@ def main():
     # ~ Example of providing list of Waypoints to visit and getting back overall Trajectory, Time, Distance and Cost ~ #
     trajectories = generateTrajectory(GFZ, positions, flightAltitude, visualize)
     wgs84Path = trajectories[0]
-    distance = calculateDistance(trajectories[1])
-    time = 0
-
+    trajectoryDistance = calculateDistance(trajectories[1])
+    time = estimateTime(trajectoryDistance, len(wgs84Path), hSpeed, vSpeed, 2)
+    cost = calculateCost(time, useCost)
 
 
 if __name__ == "__main__":
