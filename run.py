@@ -43,7 +43,10 @@ def main():
 
 
     # ~ Example of providing list of Waypoints to visit and getting back overall Trajectory, Time, Distance and Cost ~ #
-    trajectory = generateTrajectory(GFZ, positions, flightAltitude, visualize)
+    trajectories = generateTrajectory(GFZ, positions, flightAltitude, visualize)
+    wgs84Path = trajectories[0]
+    distance = calculateDistance(trajectories[1])
+    time = 0
 
 
 

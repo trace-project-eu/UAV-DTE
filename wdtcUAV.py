@@ -2,6 +2,8 @@ import math
 from handleGeo.ConvCoords import ConvCoords
 import numpy as np
 
+from handleGeo.coordinates.WGS84 import distance
+
 
 def getWDTC(GFZ, initialPosition, destinationPosition, flightAltitude, hSpeed, vSpeed, useCost, visualize):
 
@@ -18,9 +20,7 @@ def getWDTC(GFZ, initialPosition, destinationPosition, flightAltitude, hSpeed, v
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
     #                                               Calculate Distance
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
-    distance = 0
-    for i in range(len(nedPath[0]) - 1):
-        distance += math.dist(nedPath[i], nedPath[i + 1])
+    dst = calculateDistance(nedPath)
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 
 
@@ -40,7 +40,7 @@ def getWDTC(GFZ, initialPosition, destinationPosition, flightAltitude, hSpeed, v
     # calculate estimated time in minutes (linear time + delay per WP - parametric to the UAV's speed)
     balancedSpeed = a * hSpeed + b * vSpeed
     delay = c * balancedSpeed / (d + abs(balancedSpeed))
-    time = distance / (60 * balancedSpeed) + delay
+    time = dst / (60 * balancedSpeed) + delay
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 
 
@@ -51,7 +51,7 @@ def getWDTC(GFZ, initialPosition, destinationPosition, flightAltitude, hSpeed, v
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 
 
-    return [wgs84path, distance, time, cost]
+    return [wgs84path, dst, time, cost]
 
 
 
@@ -90,10 +90,18 @@ def generateTrajectory(GFZ, locations, flightAltitude, visualize):
 
 
 
-
 def visualizeTrajectory():
     # TODO: implement trajectory visualization
     print()
+
+
+
+def calculateDistance(nedPath):
+    distance = 0
+    for i in range(len(nedPath) - 1):
+        distance += math.dist(nedPath[i], nedPath[i + 1])
+
+    return distance
 
 
 
