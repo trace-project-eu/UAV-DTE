@@ -8,38 +8,9 @@ def getWDTC(GFZ, initialPosition, destinationPosition, flightAltitude, hSpeed, v
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
     #                                              Generate Trajectory
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
-    # add altitude to the initial and final positions
-    initialPosition.append(0)
-    destinationPosition.append(0)
-
-    # define initialPosition as reference point for the conversions
-    convertor = ConvCoords([], [], initialPosition)
-
-    # convert initial position and destination to NED
-    nedInitialPosition = convertor.conv_wgs84_to_ned([initialPosition])
-    nedDestinationPosition = convertor.conv_wgs84_to_ned([destinationPosition])
-
-    # add intermediate WPs
-    if not GFZ:
-        nedPath = np.array([nedInitialPosition[0],
-                                 np.append(nedInitialPosition[0][0:2], [flightAltitude]),
-                                 np.append(nedDestinationPosition[0][0:2], [flightAltitude]),
-                                 nedDestinationPosition[0]])
-    else:
-        # TODO: add intermediate WPs for geo-fenced zones with A*
-        print("Support of geo-fenced zones to be implemented soon...")
-
-    # visualize path
-    if visualize:
-        # TODO: Visualize trajectory
-        print("Trajectory visualization to be implemented soon...")
-
-    # convert ned path to WGS84 coordinates
-    wgs84path = convertor.ned_to_wgs84([nedPath.tolist()])
-
-    # remove altitude from initial/destination positions
-    initialPosition.pop()
-    destinationPosition.pop()
+    trajectories = generateTrajectory(GFZ, [initialPosition, destinationPosition], flightAltitude, visualize)
+    wgs84path = trajectories[0]
+    nedPath = trajectories[1]
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 
 
@@ -80,7 +51,7 @@ def getWDTC(GFZ, initialPosition, destinationPosition, flightAltitude, hSpeed, v
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 
 
-    return [wgs84path[0], distance, time, cost]
+    return [wgs84path, distance, time, cost]
 
 
 
@@ -114,7 +85,8 @@ def generateTrajectory(GFZ, locations, flightAltitude, visualize):
         print("Trajectory visualization to be implemented soon...")
 
     # convert ned path to WGS84 coordinates
-    return convertor.ned_to_wgs84([nedPath.tolist()])[0]
+    wgs84Path = convertor.ned_to_wgs84([nedPath.tolist()])[0]
+    return [wgs84Path, nedPath.tolist()]
 
 
 

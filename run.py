@@ -19,11 +19,6 @@ def main():
 
 
 
-    a = generateTrajectory(GFZ, positions, flightAltitude, visualize)
-    print(a)
-
-
-
     # ~~~~~~~~~~~~~~ Example of getting Trajectories, Distance, Time and Cost values between two points ~~~~~~~~~~~~~~ #
     for i in range(len(positions)-1):
         values = getWDTC(GFZ, positions[0], positions[i+1], flightAltitude, hSpeed, vSpeedMax, useCost, visualize)
@@ -48,7 +43,7 @@ def main():
 
 
     # ~ Example of providing list of Waypoints to visit and getting back overall Trajectory, Time, Distance and Cost ~ #
-    # TODO: implement this function
+    trajectory = generateTrajectory(GFZ, positions, flightAltitude, visualize)
 
 
 
