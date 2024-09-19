@@ -1,6 +1,7 @@
 import math
 import numpy as np
 
+from extremitypathfinder import PolygonEnvironment
 from handleGeo.ConvCoords import ConvCoords
 from visualization import *
 
@@ -44,7 +45,41 @@ def generateTrajectory(GFZ, locations, flightAltitude, visualize):
             nedPath = np.insert(nedPath, i+2, nedPath[i+2], 0)
             nedPath[i+2][2] = flightAltitude
     else:
-        # TODO: add intermediate WPs for geo-fenced zones with A*
+        environment = PolygonEnvironment()
+
+        # add zero altitude to all GFZ vertices
+        temp = np.array(GFZ[0])
+        GFZ1 = np.zeros((len(GFZ[0]), 3))
+        GFZ1[:, :-1] = temp
+
+        # convert initial position and destination to NED
+        nedGfzAlt = convertor.wgs84_to_ned(GFZ1.tolist())
+        polygon = np.array(nedGfzAlt)[:, 0:2].tolist()
+
+        list_of_holes = []
+        # for i in range(1, (len(GFZ))):
+        #     # add zero altitude to all GFZ vertices
+        #     temp = np.array(GFZ[i])
+        #     NFZ = np.zeros((len(GFZ[i]), 3))
+        #     NFZ[:, :-1] = temp
+        #     nedNfzAlt = convertor.wgs84_to_ned(GFZ1.tolist())
+        #     list_of_holes.append(np.array(nedNfzAlt)[:, 0:2].tolist())
+
+        environment.store(polygon, list_of_holes, validate=False)
+
+        nedPathGFZ = []
+        for i in range(0, len(nedPath)-1):
+            start_coordinates = tuple(nedPath[i][0:2])
+            goal_coordinates = tuple(nedPath[i+1][0:2])
+            intermediate_path = environment.find_shortest_path(start_coordinates, goal_coordinates)[0]
+
+        print()
+            # nedPathGFZ[i] = nedPath[i]
+            # np.insert(nedPath, i, nedPath[i], 0)
+            # nedPathGFZ[i+1][2] =  flightAltitude
+            # nedPath = np.insert(nedPath, i+2, nedPath[i+2], 0)
+            # nedPath[i+2][2] = flightAltitude
+
         # ~~~~~~~~~~~~ temp for visualization development ~~~~~~~~~~~~ #
         for i in range(0, (len(nedPath)-1)*3, 3):
             nedPath = np.insert(nedPath, i+1, nedPath[i], 0)
