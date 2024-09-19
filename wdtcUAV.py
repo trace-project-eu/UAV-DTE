@@ -2,6 +2,7 @@ import math
 import numpy as np
 
 from handleGeo.ConvCoords import ConvCoords
+from visualization import *
 
 
 def getWDTC(GFZ, initialPosition, destinationPosition, flightAltitude, hSpeed, vSpeed, useCost, visualize):
@@ -52,14 +53,12 @@ def generateTrajectory(GFZ, locations, flightAltitude, visualize):
             nedPath[i+2][2] = flightAltitude
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 
-    # visualize path
-    if visualize:
-        # TODO: Visualize trajectory
-        print("Trajectory visualization to be implemented soon...")
-        # visualizeTrajectory(GFZ, wgs84path)
-
     # convert ned path to WGS84 coordinates
     wgs84Path = convertor.ned_to_wgs84([nedPath.tolist()])[0]
+    # visualize path
+    if visualize:
+        visualizeTrajectory(GFZ, wgs84Path)
+
     return [wgs84Path, nedPath.tolist()]
 
 

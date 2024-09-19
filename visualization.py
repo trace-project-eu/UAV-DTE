@@ -8,8 +8,8 @@ from handleGeo.ConvCoords import ConvCoords
 
 def visualizeTrajectory(GFZ, wgs84Path):
     # convert trajectory to NED
-    convertor = ConvCoords([], [], wgs84Path.tolist()[0])
-    nedPath = convertor.wgs84_to_ned(wgs84Path.tolist())
+    convertor = ConvCoords([], [], wgs84Path[0])
+    nedPath = convertor.wgs84_to_ned(wgs84Path)
 
     # add zero altitude to all GFZ vertices
     temp = np.array(GFZ[0])
@@ -41,11 +41,6 @@ def visualizeTrajectory(GFZ, wgs84Path):
 
     # 3D subplot
     ax2 = fig.add_subplot(122, projection='3d')
-
-    # Explicitly set axis limits
-    ax2.set_xlim(min(xs), max(xs))
-    ax2.set_ylim(min(ys), max(ys))
-    ax2.set_zlim(min(zs), max(zs))
 
     # Axis on/off & axis labels
     ax2.axis('off')

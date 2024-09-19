@@ -18,7 +18,7 @@ def main():
     hSpeed = 7   # m/s
     vSpeedMax = 5   # m/s
     useCost = 50    # euro/hour
-    visualize = False
+    visualize = True
 
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Define hSpeed, vSpeed ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
@@ -62,7 +62,7 @@ def main():
     cost = calculateCost(time, useCost)
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Example of visualizing a trajectory with the given GFZ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
-    visualizeTrajectory(GFZ, np.array(trajectories[0]))
+    visualizeTrajectory(GFZ, trajectories[0])
 
 
 if __name__ == "__main__":
