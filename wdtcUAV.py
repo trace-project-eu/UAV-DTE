@@ -96,7 +96,7 @@ def visualizeTrajectory(GFZ, wgs84Path):
 
     # Plotting the 2D polygon
     poly_x, poly_y = zip(*nedGfz)
-    ax1.fill(poly_x, poly_y, alpha=0.5, color='green', label='GFZ Polygon')
+    ax1.fill(poly_x, poly_y, alpha=0.35, color='green', label='GFZ Polygon')
     ax1.legend(loc='lower left')
 
     # 3D subplot
@@ -120,7 +120,7 @@ def visualizeTrajectory(GFZ, wgs84Path):
 
     # Create and plot the 3D polygon
     poly3D = [[(x, y, 0) for (x, y) in nedGfz]]
-    poly3d = Poly3DCollection(poly3D, alpha=0.5, color='green', label='3D Polygon')
+    poly3d = Poly3DCollection(poly3D, alpha=0.35, color='green', label='3D Polygon')
     ax2.add_collection3d(poly3d)
 
     plt.tight_layout()
