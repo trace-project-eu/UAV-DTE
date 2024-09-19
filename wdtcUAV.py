@@ -73,20 +73,12 @@ def generateTrajectory(GFZ, locations, flightAltitude, visualize):
             goal_coordinates = tuple(nedPath[i+1][0:2])
             intermediate_path = environment.find_shortest_path(start_coordinates, goal_coordinates)[0]
 
-        print()
-            # nedPathGFZ[i] = nedPath[i]
-            # np.insert(nedPath, i, nedPath[i], 0)
-            # nedPathGFZ[i+1][2] =  flightAltitude
-            # nedPath = np.insert(nedPath, i+2, nedPath[i+2], 0)
-            # nedPath[i+2][2] = flightAltitude
+            nedPathGFZ.append(nedPath[i])
+            for j in range(0, len(intermediate_path)):
+                nedPathGFZ.append(np.insert(np.array(intermediate_path[j]), 2, flightAltitude, 0))
+            nedPathGFZ.append(nedPath[i+1])
 
-        # ~~~~~~~~~~~~ temp for visualization development ~~~~~~~~~~~~ #
-        for i in range(0, (len(nedPath)-1)*3, 3):
-            nedPath = np.insert(nedPath, i+1, nedPath[i], 0)
-            nedPath[i+1][2] =  flightAltitude
-            nedPath = np.insert(nedPath, i+2, nedPath[i+2], 0)
-            nedPath[i+2][2] = flightAltitude
-        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+        nedPath = np.array(nedPathGFZ)
 
     # convert ned path to WGS84 coordinates
     wgs84Path = convertor.ned_to_wgs84([nedPath.tolist()])[0]

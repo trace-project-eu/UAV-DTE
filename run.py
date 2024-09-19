@@ -32,47 +32,41 @@ def main():
         vSpeed = hSpeed
 
 
-    # test geofencing
+    # ~~~~~~~~~~~~~~ Example of getting Trajectories, Distance, Time and Cost values between two points ~~~~~~~~~~~~~~ #
+    # distance in meters
+    # time in minutes
+    # cost in euros
     for i in range(len(positions)-1):
         values = getWDTC(GFZ, positions[0], positions[i+1], flightAltitude, hSpeed, vSpeed, useCost, visualize)
         print(f"\nTrajectory: {values[0]}\n Distance: {values[1]}\n Time: {values[2]}\n Cost: {values[3]}\n")
 
 
-    # # ~~~~~~~~~~~~~~ Example of getting Trajectories, Distance, Time and Cost values between two points ~~~~~~~~~~~~~~ #
-    # # distance in meters
-    # # time in minutes
-    # # cost in euros
-    # for i in range(len(positions)-1):
-    #     values = getWDTC(GFZ, positions[0], positions[i+1], flightAltitude, hSpeed, vSpeed, useCost, visualize)
-    #     print(f"\nTrajectory: {values[0]}\n Distance: {values[1]}\n Time: {values[2]}\n Cost: {values[3]}\n")
-    #
-    #
-    # # ~~~~~~~~~~~~~~~~~~~~~~~~~~~ Example of generating distance and time matrices example ~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
-    # # If you need both
-    # matrices = generateMatrices(GFZ, positions, flightAltitude, hSpeed, vSpeed, useCost)
-    # distanceMatrix = matrices[0]
-    # timeMatrix = matrices[1]
-    #
-    # # If you need one of them
-    # distanceMatrix = getDistanceMatrix(GFZ, positions, flightAltitude, hSpeed, vSpeed, useCost)
-    # timeMatrix = getTimeMatrix(GFZ, positions, flightAltitude, hSpeed, vSpeed, useCost)
-    #
-    # for i in range(len(positions)):
-    #     print(distanceMatrix[i])
-    # print()
-    # for i in range(len(positions)):
-    #     print(timeMatrix[i])
-    #
-    #
-    # # ~ Example of providing list of Waypoints to visit and getting back overall Trajectory, Time, Distance and Cost ~ #
-    # trajectories = generateTrajectory(GFZ, positions, flightAltitude, visualize)
-    # wgs84Path = trajectories[0]
-    # trajectoryDistance = calculateDistance(trajectories[1])
-    # time = estimateTime(trajectoryDistance, len(wgs84Path), hSpeed, vSpeed, 2)
-    # cost = calculateCost(time, useCost)
-    #
-    # # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Example of visualizing a trajectory with the given GFZ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
-    # visualizeTrajectory(GFZ, trajectories[0])
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~ Example of generating distance and time matrices example ~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+    # If you need both
+    matrices = generateMatrices(GFZ, positions, flightAltitude, hSpeed, vSpeed, useCost)
+    distanceMatrix = matrices[0]
+    timeMatrix = matrices[1]
+
+    # If you need one of them
+    distanceMatrix = getDistanceMatrix(GFZ, positions, flightAltitude, hSpeed, vSpeed, useCost)
+    timeMatrix = getTimeMatrix(GFZ, positions, flightAltitude, hSpeed, vSpeed, useCost)
+
+    for i in range(len(positions)):
+        print(distanceMatrix[i])
+    print()
+    for i in range(len(positions)):
+        print(timeMatrix[i])
+
+
+    # ~ Example of providing list of Waypoints to visit and getting back overall Trajectory, Time, Distance and Cost ~ #
+    trajectories = generateTrajectory(GFZ, positions, flightAltitude, visualize)
+    wgs84Path = trajectories[0]
+    trajectoryDistance = calculateDistance(trajectories[1])
+    time = estimateTime(trajectoryDistance, len(wgs84Path), hSpeed, vSpeed, 2)
+    cost = calculateCost(time, useCost)
+
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Example of visualizing a trajectory with the given GFZ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+    visualizeTrajectory(GFZ, trajectories[0])
 
 
 if __name__ == "__main__":
