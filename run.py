@@ -1,7 +1,5 @@
-from scipy.spatial import distance_matrix
-
-from handleGeo.coordinates.WGS84 import distance
 from wdtcUAV import *
+from visualization import *
 
 def main():
 
