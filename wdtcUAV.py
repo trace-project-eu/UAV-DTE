@@ -1,157 +1,227 @@
 import math
 import numpy as np
-
 from extremitypathfinder import PolygonEnvironment
 from handleGeo.ConvCoords import ConvCoords
 from visualization import *
 
 
-def getWDTC(GFZ, initialPosition, destinationPosition, flightAltitude, hSpeed, vSpeed, useCost, visualize):
-    # Generate trajectory
-    trajectories = generateTrajectory(GFZ, [initialPosition, destinationPosition], flightAltitude, visualize)
-    wgs84path = trajectories[0]
-    nedPath = trajectories[1]
+def get_wdtc(gfz, initial_position, destination_position, flight_altitude, h_speed, v_speed, use_cost, visualize):
+    """
+    Calculate waypoints-distance-time-cost (WDTC) for UAV flight between two positions.
 
-    # Calculate distance
-    dst = calculateDistance(nedPath)
+    Args:
+        gfz (list): Geo-fenced zone and no-go-zones.
+        initial_position (list): Starting position [lat, lon].
+        destination_position (list): Destination position [lat, long].
+        flight_altitude (float): Altitude in meters.
+        h_speed (float): Horizontal speed in m/s.
+        v_speed (float): Vertical speed in m/s.
+        use_cost (float): Cost per hour of operation in euros.
+        visualize (bool): Flag to visualize the trajectory.
 
-    # Estimate time
-    time =  estimateTime(dst, len(wgs84path), hSpeed, vSpeed, 0)
+    Returns:
+        list: Trajectory in WGS84 coordinates, distance in meters, time in minutes, and cost in euros.
+    """
+    try:
+        trajectories = generateTrajectory(gfz, [initial_position, destination_position], flight_altitude, visualize)
+        wgs84_path, ned_path = trajectories
 
-    # Calculate cost
-    cost = calculateCost(time, useCost)
+        # Calculate distance
+        distance = calculateDistance(ned_path)
 
-    return [wgs84path, dst, time, cost]
+        # Estimate time
+        time = estimateTime(distance, len(wgs84_path), h_speed, v_speed, 0)
 
+        # Calculate cost
+        cost = calculateCost(time, use_cost)
 
-
-def generateTrajectory(GFZ, locations, flightAltitude, visualize):
-    # add zero altitude to all locations
-    temp = np.array(locations)
-    lcAlts = np.zeros((len(locations), 3))
-    lcAlts[:,:-1]  = temp
-
-    # define initialPosition as reference point for the conversions
-    convertor = ConvCoords([], [], lcAlts[0].tolist())
-
-    # convert initial position and destination to NED
-    nedPath = convertor.wgs84_to_ned(lcAlts.tolist())
-
-    # add intermediate WPs
-    if not GFZ:
-        for i in range(0, (len(nedPath)-1)*3, 3):
-            nedPath = np.insert(nedPath, i+1, nedPath[i], 0)
-            nedPath[i+1][2] =  flightAltitude
-            nedPath = np.insert(nedPath, i+2, nedPath[i+2], 0)
-            nedPath[i+2][2] = flightAltitude
-    else:
-        environment = PolygonEnvironment()
-
-        # add zero altitude to all GFZ vertices
-        temp = np.array(GFZ[0])
-        GFZ1 = np.zeros((len(GFZ[0]), 3))
-        GFZ1[:, :-1] = temp
-
-        # convert initial position and destination to NED
-        nedGfzAlt = convertor.wgs84_to_ned(GFZ1.tolist())
-        polygon = np.array(nedGfzAlt)[:, 0:2].tolist()
-
-        list_of_holes = []
-        for i in range(1, (len(GFZ))):
-            # add zero altitude to all GFZ vertices
-            temp = np.array(GFZ[i])
-            NFZ = np.zeros((len(GFZ[i]), 3))
-            NFZ[:, :-1] = temp
-            nedNfzAlt = convertor.wgs84_to_ned(NFZ.tolist())
-            list_of_holes.append(np.array(nedNfzAlt)[:, 0:2].tolist())
-
-        environment.store(polygon, list_of_holes, validate=False)
-
-        nedPathGFZ = []
-        for i in range(0, len(nedPath)-1):
-            start_coordinates = tuple(nedPath[i][0:2])
-            goal_coordinates = tuple(nedPath[i+1][0:2])
-            intermediate_path = environment.find_shortest_path(start_coordinates, goal_coordinates)[0]
-
-            nedPathGFZ.append(nedPath[i])
-            for j in range(0, len(intermediate_path)):
-                nedPathGFZ.append(np.insert(np.array(intermediate_path[j]), 2, flightAltitude, 0))
-            nedPathGFZ.append(nedPath[i+1])
-
-        nedPath = np.array(nedPathGFZ)
-
-    # convert ned path to WGS84 coordinates
-    wgs84Path = convertor.ned_to_wgs84([nedPath.tolist()])[0]
-    # visualize path
-    if visualize:
-        visualizeTrajectory(GFZ, wgs84Path)
-
-    return [wgs84Path, nedPath.tolist()]
+        return [wgs84_path, distance, time, cost]
+    except Exception as e:
+        print(f"Error in WDTC calculation: {e}")
+        return None
 
 
+def generateTrajectory(gfz, locations, flight_altitude, visualize):
+    """
+    Generate a UAV flight trajectory based on the GFZ and NFZs.
 
-def calculateDistance(nedPath):
-    distance = 0
-    for i in range(len(nedPath) - 1):
-        distance += math.dist(nedPath[i], nedPath[i + 1])
+    Args:
+        gfz (list): Geo-fenced zone and no-go-zones.
+        locations (list): List of [lat, long] positions.
+        flight_altitude (float): Altitude in meters.
+        visualize (bool): Flag to visualize the trajectory.
 
-    return distance
+    Returns:
+        list: Trajectory in WGS84 coordinates and NED coordinates.
+    """
+    try:
+        temp = np.array(locations)
+        lc_alt = np.zeros((len(locations), 3))
+        lc_alt[:, :-1] = temp
+
+        # Define initial position as reference point for coordinate conversion
+        convertor = ConvCoords([], [], lc_alt[0].tolist())
+
+        # Convert wgs84 locations to NED
+        ned_path = convertor.wgs84_to_ned(lc_alt.tolist())
+
+        # Add intermediate waypoints (taking into account the flight altitude and the GFZ/NFZs)
+        if not gfz:
+            for i in range(0, (len(ned_path) - 1) * 3, 3):
+                ned_path = np.insert(ned_path, i + 1, ned_path[i], 0)
+                ned_path[i + 1][2] = flight_altitude
+                ned_path = np.insert(ned_path, i + 2, ned_path[i + 2], 0)
+                ned_path[i + 2][2] = flight_altitude
+        else:
+            environment = PolygonEnvironment()
+
+            # Convert GFZ vertices to NED coordinates
+            temp = np.array(gfz[0])
+            gfz_poly = np.zeros((len(gfz[0]), 3))
+            gfz_poly[:, :-1] = temp
+            ned_gfz_alt = convertor.wgs84_to_ned(gfz_poly.tolist())
+            polygon = np.array(ned_gfz_alt)[:, 0:2].tolist()
+
+            list_of_holes = []
+            for zone in gfz[1:]:
+                temp = np.array(zone)
+                nfz = np.zeros((len(zone), 3))
+                nfz[:, :-1] = temp
+                ned_nfz_alt = convertor.wgs84_to_ned(nfz.tolist())
+                list_of_holes.append(np.array(ned_nfz_alt)[:, 0:2].tolist())
+
+            environment.store(polygon, list_of_holes, validate=False)
+
+            ned_path_gfz = []
+            for i in range(len(ned_path) - 1):
+                start_coordinates = tuple(ned_path[i][0:2])
+                goal_coordinates = tuple(ned_path[i + 1][0:2])
+                intermediate_path = environment.find_shortest_path(start_coordinates, goal_coordinates)[0]
+
+                ned_path_gfz.append(ned_path[i])
+                for point in intermediate_path:
+                    ned_path_gfz.append(np.insert(np.array(point), 2, flight_altitude, 0))
+                ned_path_gfz.append(ned_path[i + 1])
+
+            ned_path = np.array(ned_path_gfz)
+
+        # Convert NED path back to WGS84 coordinates
+        wgs84_path = convertor.ned_to_wgs84([ned_path.tolist()])[0]
+
+        # Visualize the path if needed
+        if visualize:
+            visualizeTrajectory(gfz, wgs84_path)
+
+        return [wgs84_path, ned_path.tolist()]
+    except Exception as e:
+        print(f"Error in trajectory generation: {e}")
+        return None
 
 
+def calculateDistance(ned_path):
+    """
+    Calculate the total distance of a given NED path.
 
-def estimateTime(dst, waypointsNumber, horizontalSpeed, verticalSpeed, delayPerStop):
-    #   a, b are constants used to regulate the balance between   #
-    # horizontal and vertical speeds for the generated trajectory #
-    a = 0.85 # coefficient for horizontal speed
-    b = 0.15 # coefficient for vertical speed
+    Args:
+        ned_path (list): Path in NED coordinates.
 
-    #  c, d are constants for the sigmoid function, used to  #
-    # calculate a delay for each WP, parametric to the speed #
-    c = 5
-    d = 20
-
-    # calculate estimated time in minutes (linear time + delay per WP - parametric to the UAV's speed)
-    # delay adds a time, parametric to the speed of the UAV for each turn (waypoint)
-    # delayPerStop is an additional time for each landing-delivery position of the UAV
-    balancedSpeed = a * horizontalSpeed + b * verticalSpeed
-    delay = (c * balancedSpeed / (d + abs(balancedSpeed))) * waypointsNumber
-    time = dst / (60 * balancedSpeed) + delay + delayPerStop * (waypointsNumber - 1) / 3
-
-    return time
+    Returns:
+        float: Total distance in meters.
+    """
+    try:
+        distance = sum(math.dist(ned_path[i], ned_path[i + 1]) for i in range(len(ned_path) - 1))
+        return distance
+    except Exception as e:
+        print(f"Error calculating distance: {e}")
+        return 0
 
 
+def estimateTime(distance, waypoints_number, horizontal_speed, vertical_speed, delay_per_stop):
+    """
+    Estimate the time required for the UAV to complete a trajectory.
 
-def calculateCost(time, useCost):
-    return time * useCost / 60
+    Args:
+        distance (float): Distance in meters.
+        waypoints_number (int): Number of waypoints in the path.
+        horizontal_speed (float): Horizontal speed in m/s.
+        vertical_speed (float): Vertical speed in m/s.
+        delay_per_stop (float): Additional delay for each stop.
 
+    Returns:
+        float: Estimated time in minutes.
+    """
+    try:
+        a = 0.85  # Horizontal speed coefficient
+        b = 0.15  # Vertical speed coefficient
+        c, d = 5, 20  # Constants for calculating delay per waypoint
 
+        balanced_speed = a * horizontal_speed + b * vertical_speed
+        delay = (c * balanced_speed / (d + abs(balanced_speed))) * waypoints_number
+        time = distance / (60 * balanced_speed) + delay + delay_per_stop * (waypoints_number - 1) / 3
 
-def generateMatrices(GFZ, positions, flightAltitude, hSpeed, vSpeedMax, useCost):
-    # Generate matrices
-    distanceMatrix = []
-    timeMatrix = []
-    for i in range(len(positions)):
-        dm = []
-        tm = []
-        for j in range(len(positions)):
-            if i == j:
-                dm.append(0)
-                tm.append(0)
-            else:
-                values = getWDTC(GFZ, positions[i], positions[j], flightAltitude, hSpeed, vSpeedMax, useCost, False)
-                dm.append(values[1])
-                tm.append(values[2])
-        distanceMatrix.append(dm)
-        timeMatrix.append(tm)
-
-    return [distanceMatrix,timeMatrix]
-
-
-
-def getDistanceMatrix(GFZ, positions, flightAltitude, hSpeed, vSpeedMax, useCost):
-    return generateMatrices(GFZ, positions, flightAltitude, hSpeed, vSpeedMax, useCost)[0]
+        return time
+    except Exception as e:
+        print(f"Error estimating time: {e}")
+        return 0
 
 
+def calculateCost(time, use_cost):
+    """
+    Calculate the total cost of a flight based on time and cost per hour.
 
-def getTimeMatrix(GFZ, positions, flightAltitude, hSpeed, vSpeedMax, useCost):
-    return generateMatrices(GFZ, positions, flightAltitude, hSpeed, vSpeedMax, useCost)[1]
+    Args:
+        time (float): Time in minutes.
+        use_cost (float): Cost per hour of operation in euros.
+
+    Returns:
+        float: Total cost in euros.
+    """
+    try:
+        return time * use_cost / 60
+    except Exception as e:
+        print(f"Error calculating cost: {e}")
+        return 0
+
+
+def generateMatrices(gfz, positions, flight_altitude, h_speed, v_speed, use_cost):
+    """
+    Generate distance and time matrices for the given positions.
+
+    Args:
+        gfz (list): Geo-fenced zone and no-go-zones.
+        positions (list): List of UAV positions.
+        flight_altitude (float): Altitude in meters.
+        h_speed (float): Horizontal speed in m/s.
+        v_speed (float): Vertical speed in m/s.
+        use_cost (float): Cost per hour of operation in euros.
+
+    Returns:
+        list: Distance matrix and time matrix.
+    """
+    try:
+        distance_matrix = []
+        time_matrix = []
+
+        for i in range(len(positions)):
+            dm_row = []
+            tm_row = []
+            for j in range(len(positions)):
+                if i == j:
+                    dm_row.append(0)
+                    tm_row.append(0)
+                else:
+                    result = get_wdtc(gfz, positions[i], positions[j], flight_altitude, h_speed, v_speed, use_cost,
+                                      False)
+                    if result:
+                        dm_row.append(result[1])  # Distance
+                        tm_row.append(result[2])  # Time
+                    else:
+                        dm_row.append(float('inf'))
+                        tm_row.append(float('inf'))
+            distance_matrix.append(dm_row)
+            time_matrix.append(tm_row)
+
+        return [distance_matrix, time_matrix]
+    except Exception as e:
+        print(f"Error generating matrices: {e}")
+        return [[], []]
