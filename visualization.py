@@ -65,7 +65,10 @@ def visualizeTrajectory(GFZ, wgs84Path):
 
         if len(GFZ) > 1:
             for i in range(1, len(GFZ)):
-                plot_polygon(GFZ[i], convertor, ax1, ax2, 'red', 'No-Go-Zone')
+                if i==1:
+                    plot_polygon(GFZ[i], convertor, ax1, ax2, 'red', 'No-Go-Zone')
+                else:
+                    plot_polygon(GFZ[i], convertor, ax1, ax2, 'red', '')
 
     plt.tight_layout()
     plt.show()
@@ -81,10 +84,16 @@ def plot_polygon(poly, convertor, ax1, ax2, color, label):
 
     # Plotting the 2D polygon
     poly_x, poly_y = zip(*nedGfz)
-    ax1.fill(poly_x, poly_y, alpha=0.35, color=color, label=label)
+    if label:
+        ax1.fill(poly_x, poly_y, alpha=0.35, color=color, label=label)
+    else:
+        ax1.fill(poly_x, poly_y, alpha=0.35, color=color)
     ax1.legend(loc='lower left')
 
     # Create and plot the 3D polygon
     poly3D = [[(x, y, 0) for (x, y) in nedGfz]]
-    poly3d = Poly3DCollection(poly3D, alpha=0.35, color=color, label=label)
+    if label:
+        poly3d = Poly3DCollection(poly3D, alpha=0.35, color=color, label=label)
+    else:
+        poly3d = Poly3DCollection(poly3D, alpha=0.35, color=color)
     ax2.add_collection3d(poly3d)

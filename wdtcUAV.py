@@ -57,13 +57,13 @@ def generateTrajectory(GFZ, locations, flightAltitude, visualize):
         polygon = np.array(nedGfzAlt)[:, 0:2].tolist()
 
         list_of_holes = []
-        # for i in range(1, (len(GFZ))):
-        #     # add zero altitude to all GFZ vertices
-        #     temp = np.array(GFZ[i])
-        #     NFZ = np.zeros((len(GFZ[i]), 3))
-        #     NFZ[:, :-1] = temp
-        #     nedNfzAlt = convertor.wgs84_to_ned(GFZ1.tolist())
-        #     list_of_holes.append(np.array(nedNfzAlt)[:, 0:2].tolist())
+        for i in range(1, (len(GFZ))):
+            # add zero altitude to all GFZ vertices
+            temp = np.array(GFZ[i])
+            NFZ = np.zeros((len(GFZ[i]), 3))
+            NFZ[:, :-1] = temp
+            nedNfzAlt = convertor.wgs84_to_ned(NFZ.tolist())
+            list_of_holes.append(np.array(nedNfzAlt)[:, 0:2].tolist())
 
         environment.store(polygon, list_of_holes, validate=False)
 
